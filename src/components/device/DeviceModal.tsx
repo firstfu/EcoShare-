@@ -1,17 +1,34 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import type { Device } from "./DeviceManager";
+import StepIndicator from "./StepIndicator";
 
 interface DeviceModalProps {
   isOpen: boolean;
   onClose: () => void;
   device: Device | null;
   onSubmit: (formData: Omit<Device, "id">) => void;
+  currentStep?: number;
 }
+
+const steps = [
+  {
+    title: "基本資訊",
+    description: "設定設備資訊",
+  },
+  {
+    title: "位置綁定",
+    description: "選擇安裝位置",
+  },
+  {
+    title: "設備配對",
+    description: "連接實體設備",
+  },
+];
 
 type FormData = Omit<Device, "id">;
 
-export default function DeviceModal({ isOpen, onClose, device, onSubmit }: DeviceModalProps) {
+export default function DeviceModal({ isOpen, onClose, device, onSubmit, currentStep = 0 }: DeviceModalProps) {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     type: "socket",
@@ -58,8 +75,7 @@ export default function DeviceModal({ isOpen, onClose, device, onSubmit }: Devic
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-md">
-        {/* 標題列 */}
+      <div className="bg-white rounded-lg w-full max-w-2xl">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-medium">{device ? "編輯設備" : "新增設備"}</h3>
           <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
@@ -67,9 +83,10 @@ export default function DeviceModal({ isOpen, onClose, device, onSubmit }: Devic
           </button>
         </div>
 
-        {/* 表單 */}
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="space-y-4">
+        <StepIndicator currentStep={currentStep} steps={steps} />
+
+        <form onSubmit={handleSubmit} className="p-6">
+          <div className="grid grid-cols-2 gap-6">
             {/* 設備名稱 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">設備名稱</label>
@@ -93,32 +110,6 @@ export default function DeviceModal({ isOpen, onClose, device, onSubmit }: Devic
                 <option value="socket">智慧插座</option>
                 <option value="sensor">感測器</option>
                 <option value="controller">控制器</option>
-              </select>
-            </div>
-
-            {/* 位置 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">位置</label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B38B5F] focus:border-transparent"
-                required
-              />
-            </div>
-
-            {/* 狀態 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">狀態</label>
-              <select
-                value={formData.status}
-                onChange={e => setFormData(prev => ({ ...prev, status: e.target.value as FormData["status"] }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B38B5F] focus:border-transparent"
-              >
-                <option value="active">運作中</option>
-                <option value="inactive">停用</option>
-                <option value="maintenance">維護中</option>
               </select>
             </div>
 
@@ -173,13 +164,12 @@ export default function DeviceModal({ isOpen, onClose, device, onSubmit }: Devic
             </div>
           </div>
 
-          {/* 按鈕列 */}
-          <div className="flex justify-end gap-3 mt-6">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+          <div className="mt-6 flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               取消
             </button>
-            <button type="submit" className="px-4 py-2 text-white bg-[#B38B5F] rounded-lg hover:bg-[#8B6A47] transition-colors">
-              {device ? "更新" : "新增"}
+            <button type="submit" className="px-4 py-2 bg-[#B38B5F] text-white rounded-lg hover:bg-[#8B6A47] transition-colors">
+              下一步
             </button>
           </div>
         </form>

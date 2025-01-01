@@ -12,6 +12,8 @@ import { FileText, Users, MonitorSmartphone, Zap, Battery, Settings, Plus } from
 import { SettingsProvider } from "./settings/contexts/SettingsContext";
 import SettingsManager from "./settings/components/SettingsManager";
 import DeviceModal from "./components/device/DeviceModal";
+import DeviceBindingModal from "./components/device/DeviceBindingModal";
+import DevicePairingModal from "./components/device/DevicePairingModal";
 
 const yearData = [
   { date: 2012, value: 0 },
@@ -54,6 +56,38 @@ function App() {
   const [endYear, setEndYear] = useState(2023);
   const [activePage, setActivePage] = useState<"ems" | "powerBank" | "energyManager" | "members" | "devices">("devices");
   const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
+  const [isBindingModalOpen, setIsBindingModalOpen] = useState(false);
+  const [isPairingModalOpen, setIsPairingModalOpen] = useState(false);
+  const [pendingDeviceData, setPendingDeviceData] = useState<any>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+
+  // 模擬可用位置數據
+  const availableLocations = [
+    {
+      floor: "1F",
+      spots: [
+        { id: "1F-A", name: "櫃台區", status: "occupied" as const },
+        { id: "1F-B", name: "用餐區A", status: "occupied" as const },
+        { id: "1F-C", name: "用餐區B", status: "available" as const },
+        { id: "1F-D", name: "廚房", status: "occupied" as const },
+      ],
+    },
+    {
+      floor: "2F",
+      spots: [
+        { id: "2F-A", name: "會議室A", status: "occupied" as const },
+        { id: "2F-B", name: "會議室B", status: "available" as const },
+        { id: "2F-C", name: "辦公區", status: "available" as const },
+      ],
+    },
+    {
+      floor: "3F",
+      spots: [
+        { id: "3F-A", name: "休息區", status: "available" as const },
+        { id: "3F-B", name: "儲藏室", status: "available" as const },
+      ],
+    },
+  ];
 
   const handleRangeChange = (start: number, end: number) => {
     setStartYear(start);
@@ -78,9 +112,42 @@ function App() {
   };
 
   const handleDeviceSubmit = (formData: any) => {
-    // 這裡處理新增設備的邏輯
-    console.log("New device data:", formData);
+    setPendingDeviceData(formData);
     setIsDeviceModalOpen(false);
+    setIsBindingModalOpen(true);
+  };
+
+  const handleBindingConfirm = (location: string) => {
+    setSelectedLocation(location);
+    setIsBindingModalOpen(false);
+    setIsPairingModalOpen(true);
+  };
+
+  const handlePairingComplete = async (deviceId: string) => {
+    try {
+      // 這裡實作完整的設備註冊流程
+      // 1. 驗證設備ID
+      // 2. 建立設備連接
+      // 3. 更新設備狀態
+      // 4. 寫入資料庫
+      console.log("Registering device:", {
+        ...pendingDeviceData,
+        location: selectedLocation,
+        deviceId,
+        status: "active",
+      });
+
+      // 重置所有狀態
+      setIsPairingModalOpen(false);
+      setPendingDeviceData(null);
+      setSelectedLocation(null);
+
+      // 可以在這裡加入成功提示
+    } catch (error) {
+      // 處理錯誤情況
+      console.error("Device registration failed:", error);
+      // 可以在這裡加入錯誤提示
+    }
   };
 
   const renderContent = () => {
@@ -137,6 +204,28 @@ function App() {
 
             {/* 新增設備的 Modal */}
             <DeviceModal isOpen={isDeviceModalOpen} onClose={() => setIsDeviceModalOpen(false)} device={null} onSubmit={handleDeviceSubmit} />
+
+            {/* 設備綁定的 Modal */}
+            <DeviceBindingModal
+              isOpen={isBindingModalOpen}
+              onClose={() => {
+                setIsBindingModalOpen(false);
+                setPendingDeviceData(null);
+              }}
+              onConfirm={handleBindingConfirm}
+              availableLocations={availableLocations}
+            />
+
+            {/* 設備配對的 Modal */}
+            <DevicePairingModal
+              isOpen={isPairingModalOpen}
+              onClose={() => {
+                setIsPairingModalOpen(false);
+                setPendingDeviceData(null);
+                setSelectedLocation(null);
+              }}
+              onPairingComplete={handlePairingComplete}
+            />
           </>
         );
       default:
