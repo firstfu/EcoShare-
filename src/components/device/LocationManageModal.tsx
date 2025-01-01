@@ -122,7 +122,7 @@ export default function LocationManageModal({ isOpen, onClose, locations, onSave
 
         {/* 主要內容區 */}
         <div className="flex-1 overflow-y-auto px-4">
-          {editedLocations.map((location, index) => (
+          {editedLocations.map(location => (
             <div key={location.floor} className="mt-4 bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between p-4 bg-gray-50/50">
                 <div className="flex items-center gap-2">
