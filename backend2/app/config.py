@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     """JWT token 的有效期限（分鐘）"""
 
     # CORS設定
-    CORS_ORIGINS: list = ["http://localhost:3000"]
+    CORS_ORIGINS: list = ["http://localhost:3000", "http://localhost:5173"]
     """允許跨域請求的來源清單，預設允許前端開發伺服器的請求"""
 
     # API設定
