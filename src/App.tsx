@@ -8,12 +8,13 @@ import SmartSocket from "./components/SmartSocket";
 import PowerBank from "./components/PowerBank";
 import EnergyManager from "./components/EnergyManager";
 import MemberManager from "./components/member/MemberManager";
-import { FileText, Users, MonitorSmartphone, Zap, Battery, Settings, Plus } from "lucide-react";
+import { FileText, Users, MonitorSmartphone, Zap, Battery, Settings, Plus, MapPin } from "lucide-react";
 import { SettingsProvider } from "./settings/contexts/SettingsContext";
 import SettingsManager from "./settings/components/SettingsManager";
 import DeviceModal from "./components/device/DeviceModal";
 import DeviceBindingModal from "./components/device/DeviceBindingModal";
 import DevicePairingModal from "./components/device/DevicePairingModal";
+import LocationManageModal from "./components/device/LocationManageModal";
 
 const yearData = [
   { date: 2012, value: 0 },
@@ -60,9 +61,8 @@ function App() {
   const [isPairingModalOpen, setIsPairingModalOpen] = useState(false);
   const [pendingDeviceData, setPendingDeviceData] = useState<any>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-
-  // 模擬可用位置數據
-  const availableLocations = [
+  const [isLocationManageModalOpen, setIsLocationManageModalOpen] = useState(false);
+  const [locations, setLocations] = useState([
     {
       floor: "1F",
       spots: [
@@ -87,7 +87,7 @@ function App() {
         { id: "3F-B", name: "儲藏室", status: "available" as const },
       ],
     },
-  ];
+  ]);
 
   const handleRangeChange = (start: number, end: number) => {
     setStartYear(start);
@@ -150,6 +150,10 @@ function App() {
     }
   };
 
+  const handleSaveLocations = (newLocations: typeof locations) => {
+    setLocations(newLocations);
+  };
+
   const renderContent = () => {
     switch (activePage) {
       case "powerBank":
@@ -166,13 +170,22 @@ function App() {
             <div className="p-4 bg-white">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg">路易莎咖啡(台中1店)</h2>
-                <button
-                  onClick={handleAddDevice}
-                  className="flex items-center gap-1 px-3 py-2 bg-[#B38B5F] text-white rounded-lg hover:bg-[#8B6A47] transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>新增設備</span>
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsLocationManageModalOpen(true)}
+                    className="flex items-center gap-1 px-3 py-2 border border-[#B38B5F] text-[#B38B5F] rounded-lg hover:bg-[#B38B5F] hover:bg-opacity-10 transition-colors"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    <span>管理位置</span>
+                  </button>
+                  <button
+                    onClick={handleAddDevice}
+                    className="flex items-center gap-1 px-3 py-2 bg-[#B38B5F] text-white rounded-lg hover:bg-[#8B6A47] transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>新增設備</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -213,7 +226,7 @@ function App() {
                 setPendingDeviceData(null);
               }}
               onConfirm={handleBindingConfirm}
-              availableLocations={availableLocations}
+              availableLocations={locations}
             />
 
             {/* 設備配對的 Modal */}
@@ -225,6 +238,14 @@ function App() {
                 setSelectedLocation(null);
               }}
               onPairingComplete={handlePairingComplete}
+            />
+
+            {/* 位置管理的 Modal */}
+            <LocationManageModal
+              isOpen={isLocationManageModalOpen}
+              onClose={() => setIsLocationManageModalOpen(false)}
+              locations={locations}
+              onSave={handleSaveLocations}
             />
           </>
         );
