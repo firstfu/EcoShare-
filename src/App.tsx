@@ -8,7 +8,6 @@ import SmartSocket from "./components/SmartSocket";
 import PowerBank from "./components/PowerBank";
 import EnergyManager from "./components/EnergyManager";
 import MemberManager from "./components/member/MemberManager";
-import DeviceManager from "./components/device/DeviceManager";
 import { FileText, Users, MonitorSmartphone, Zap, Battery, Settings } from "lucide-react";
 
 const yearData = [
@@ -50,7 +49,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<"year" | "month" | "day">("year");
   const [startYear, setStartYear] = useState(2012);
   const [endYear, setEndYear] = useState(2023);
-  const [activePage, setActivePage] = useState<"ems" | "powerBank" | "energyManager" | "members" | "devices">("ems");
+  const [activePage, setActivePage] = useState<"ems" | "powerBank" | "energyManager" | "members" | "devices">("devices");
 
   const handleRangeChange = (start: number, end: number) => {
     setStartYear(start);
@@ -79,8 +78,6 @@ function App() {
       case "members":
         return <MemberManager />;
       case "devices":
-        return <DeviceManager />;
-      default:
         return (
           <>
             <div className="p-4 bg-white">
@@ -108,14 +105,16 @@ function App() {
               </div>
 
               <div className="space-y-4">
-                <SmartSocket floor="1F" revenue={1000} status="rented" />
-                <SmartSocket floor="2F" revenue={1000} status="reserved" />
-                <SmartSocket floor="3F" revenue={500} status="disconnected" />
-                <SmartSocket floor="4F" revenue={500} status="error" />
+                <SmartSocket floor="1F" revenue={1000} status="rented" onClick={() => {}} />
+                <SmartSocket floor="2F" revenue={1000} status="reserved" onClick={() => {}} />
+                <SmartSocket floor="3F" revenue={500} status="disconnected" onClick={() => {}} />
+                <SmartSocket floor="4F" revenue={500} status="error" onClick={() => {}} />
               </div>
             </div>
           </>
         );
+      default:
+        return <div className="flex-1 bg-gray-50">{/* 空白頁面 */}</div>;
     }
   };
 
