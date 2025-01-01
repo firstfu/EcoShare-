@@ -1,18 +1,43 @@
 import { useState } from "react";
-import { Mail, Phone, MoreVertical, Edit2, Trash2, Clock } from "lucide-react";
-import type { Member } from "./MemberManager";
+import { Mail, Phone, Edit2, Trash2 } from "lucide-react";
+import type { Member } from "../../types/member";
+import { useMembers, useDeleteMember } from "../../hooks/useMember";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 
 interface MemberListProps {
-  members: Member[];
   onEdit: (member: Member) => void;
-  onDelete: (member: Member) => void;
 }
 
-export default function MemberList({ members, onEdit, onDelete }: MemberListProps) {
+export default function MemberList({ onEdit }: MemberListProps) {
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const {
+    data: membersData,
+    isLoading,
+    isError,
+    error,
+  } = useMembers({
+    skip: (page - 1) * pageSize,
+    limit: pageSize,
+  });
+
+  console.log("=====================");
+  console.log(membersData);
+  console.log("=====================");
+
+  const deleteMutation = useDeleteMember();
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
 
-  const getRoleText = (role: "admin" | "manager" | "user") => {
+  const handleDelete = async (member: Member) => {
+    try {
+      await deleteMutation.mutateAsync(member.id);
+      setMemberToDelete(null);
+    } catch (error) {
+      console.error("刪除成員失敗:", error);
+    }
+  };
+
+  const getRoleText = (role: Member["role"]) => {
     switch (role) {
       case "admin":
         return "管理員";
@@ -25,7 +50,7 @@ export default function MemberList({ members, onEdit, onDelete }: MemberListProp
     }
   };
 
-  const getRoleColor = (role: "admin" | "manager" | "user") => {
+  const getRoleColor = (role: Member["role"]) => {
     switch (role) {
       case "admin":
         return "text-purple-600 bg-purple-50";
@@ -38,44 +63,40 @@ export default function MemberList({ members, onEdit, onDelete }: MemberListProp
     }
   };
 
-  const getStatusColor = (status: "active" | "inactive") => {
-    return status === "active" ? "text-green-600" : "text-gray-400";
-  };
+  if (isLoading) {
+    return <div className="flex justify-center p-8">載入中...</div>;
+  }
 
-  const formatLastActive = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("zh-TW", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  if (isError) {
+    return <div className="flex justify-center p-8 text-red-600">載入失敗: {(error as Error)?.message || "未知錯誤"}</div>;
+  }
+
+  if (!membersData?.data || !Array.isArray(membersData.data)) {
+    return <div className="flex justify-center p-8">沒有成員資料</div>;
+  }
 
   return (
     <>
       <div className="grid gap-4">
-        {members.map(member => (
+        {membersData.data.map((member: Member) => (
           <div key={member.id} className="bg-white rounded-lg shadow-sm p-4">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 {/* 頭像 */}
                 <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                  <span className="text-lg font-medium text-gray-600">{member.name.slice(0, 1)}</span>
+                  <span className="text-lg font-medium text-gray-600">{member.username.slice(0, 1)}</span>
                 </div>
 
                 {/* 基本資訊 */}
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-medium">{member.name}</h3>
+                    <h3 className="text-lg font-medium">{member.username}</h3>
                     <span className={`px-2 py-0.5 text-xs rounded-full ${getRoleColor(member.role)}`}>{getRoleText(member.role)}</span>
-                    <span className={`flex items-center gap-1 text-sm ${getStatusColor(member.status)}`}>
+                    <span className={`flex items-center gap-1 text-sm ${member.is_active ? "text-green-600" : "text-gray-400"}`}>
                       <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                      {member.status === "active" ? "在線" : "離線"}
+                      {member.is_active ? "在線" : "離線"}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-500">{member.department}</div>
                 </div>
               </div>
 
@@ -99,30 +120,42 @@ export default function MemberList({ members, onEdit, onDelete }: MemberListProp
                 <Mail className="w-4 h-4" />
                 <span>{member.email}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Phone className="w-4 h-4" />
-                <span>{member.phone}</span>
-              </div>
-            </div>
-
-            {/* 最後活動時間 */}
-            <div className="mt-4 flex items-center gap-2 text-xs text-gray-400">
-              <Clock className="w-3 h-3" />
-              <span>最後活動：{formatLastActive(member.lastActive)}</span>
+              {member.phone && (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Phone className="w-4 h-4" />
+                  <span>{member.phone}</span>
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-      {/* 刪除確認對話框 */}
-      {memberToDelete && (
-        <DeleteConfirmModal
-          isOpen={!!memberToDelete}
-          onClose={() => setMemberToDelete(null)}
-          onConfirm={() => onDelete(memberToDelete)}
-          member={memberToDelete}
-        />
+      {/* 分頁控制 */}
+      {membersData && membersData.total > pageSize && (
+        <div className="mt-4 flex justify-center">
+          <nav className="flex gap-2">
+            {Array.from({ length: Math.ceil(membersData.total / pageSize) }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setPage(index + 1)}
+                className={`px-3 py-1 rounded ${page === index + 1 ? "bg-[#B38B5F] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </nav>
+        </div>
       )}
+
+      {/* 刪除確認對話框 */}
+      <DeleteConfirmModal
+        isOpen={!!memberToDelete}
+        onClose={() => setMemberToDelete(null)}
+        onConfirm={() => memberToDelete && handleDelete(memberToDelete)}
+        title="刪除成員"
+        message={`確定要刪除成員 ${memberToDelete?.username} 嗎？此操作無法復原。`}
+      />
     </>
   );
 }

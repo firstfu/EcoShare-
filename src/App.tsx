@@ -15,6 +15,9 @@ import DeviceModal from "./components/device/DeviceModal";
 import DeviceBindingModal from "./components/device/DeviceBindingModal";
 import DevicePairingModal from "./components/device/DevicePairingModal";
 import LocationManageModal from "./components/device/LocationManageModal";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 const yearData = [
   { date: 2012, value: 0 },
@@ -255,37 +258,41 @@ function App() {
   };
 
   return (
-    <SettingsProvider>
-      <div className="min-h-screen bg-white">
-        {activePage !== "ems" && (
-          <Header
-            title={activePage === "powerBank" ? "共享充電寶" : activePage === "energyManager" ? "節能管家" : activePage === "members" ? "成員管理" : "設備管理"}
-            onBack={() => setActivePage("ems")}
-          />
-        )}
+    <QueryClientProvider client={queryClient}>
+      <SettingsProvider>
+        <div className="min-h-screen bg-white">
+          {activePage !== "ems" && (
+            <Header
+              title={
+                activePage === "powerBank" ? "共享充電寶" : activePage === "energyManager" ? "節能管家" : activePage === "members" ? "成員管理" : "設備管理"
+              }
+              onBack={() => setActivePage("ems")}
+            />
+          )}
 
-        {renderContent()}
+          {renderContent()}
 
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
-          {[
-            { name: "成員管理", icon: Users, page: "members" as const },
-            { name: "設備管理", icon: MonitorSmartphone, page: "devices" as const },
-            { name: "節能管家", icon: Zap, page: "energyManager" as const },
-            { name: "共享充電寶", icon: Battery, page: "powerBank" as const },
-            { name: "設定", icon: Settings, page: "ems" as const },
-          ].map(({ name, icon: Icon, page }) => (
-            <button
-              key={name}
-              className={`flex flex-col items-center p-2 ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`}
-              onClick={() => setActivePage(page)}
-            >
-              <Icon className={`w-6 h-6 mb-1 ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`} />
-              <span className={`text-xs ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`}>{name}</span>
-            </button>
-          ))}
-        </nav>
-      </div>
-    </SettingsProvider>
+          <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
+            {[
+              { name: "成員管理", icon: Users, page: "members" as const },
+              { name: "設備管理", icon: MonitorSmartphone, page: "devices" as const },
+              { name: "節能管家", icon: Zap, page: "energyManager" as const },
+              { name: "共享充電寶", icon: Battery, page: "powerBank" as const },
+              { name: "設定", icon: Settings, page: "ems" as const },
+            ].map(({ name, icon: Icon, page }) => (
+              <button
+                key={name}
+                className={`flex flex-col items-center p-2 ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`}
+                onClick={() => setActivePage(page)}
+              >
+                <Icon className={`w-6 h-6 mb-1 ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`} />
+                <span className={`text-xs ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`}>{name}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+      </SettingsProvider>
+    </QueryClientProvider>
   );
 }
 
