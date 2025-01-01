@@ -9,6 +9,8 @@ import PowerBank from "./components/PowerBank";
 import EnergyManager from "./components/EnergyManager";
 import MemberManager from "./components/member/MemberManager";
 import { FileText, Users, MonitorSmartphone, Zap, Battery, Settings } from "lucide-react";
+import { SettingsProvider } from "./settings/contexts/SettingsContext";
+import SettingsManager from "./settings/components/SettingsManager";
 
 const yearData = [
   { date: 2012, value: 0 },
@@ -77,6 +79,8 @@ function App() {
         return <EnergyManager />;
       case "members":
         return <MemberManager />;
+      case "ems":
+        return <SettingsManager />;
       case "devices":
         return (
           <>
@@ -119,43 +123,37 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header
-        title={
-          activePage === "ems"
-            ? "EMS能源監控管理系統"
-            : activePage === "powerBank"
-            ? "共享充電寶"
-            : activePage === "energyManager"
-            ? "節能管家"
-            : activePage === "members"
-            ? "成員管理"
-            : "設備管理"
-        }
-        onBack={activePage !== "ems" ? () => setActivePage("ems") : undefined}
-      />
+    <SettingsProvider>
+      <div className="min-h-screen bg-white">
+        {activePage !== "ems" && (
+          <Header
+            title={activePage === "powerBank" ? "共享充電寶" : activePage === "energyManager" ? "節能管家" : activePage === "members" ? "成員管理" : "設備管理"}
+            onBack={() => setActivePage("ems")}
+          />
+        )}
 
-      {renderContent()}
+        {renderContent()}
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
-        {[
-          { name: "成員管理", icon: Users, page: "members" as const },
-          { name: "設備管理", icon: MonitorSmartphone, page: "devices" as const },
-          { name: "節能管家", icon: Zap, page: "energyManager" as const },
-          { name: "共享充電寶", icon: Battery, page: "powerBank" as const },
-          { name: "設定", icon: Settings, page: "ems" as const },
-        ].map(({ name, icon: Icon, page }) => (
-          <button
-            key={name}
-            className={`flex flex-col items-center p-2 ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`}
-            onClick={() => setActivePage(page)}
-          >
-            <Icon className={`w-6 h-6 mb-1 ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`} />
-            <span className={`text-xs ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`}>{name}</span>
-          </button>
-        ))}
-      </nav>
-    </div>
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
+          {[
+            { name: "成員管理", icon: Users, page: "members" as const },
+            { name: "設備管理", icon: MonitorSmartphone, page: "devices" as const },
+            { name: "節能管家", icon: Zap, page: "energyManager" as const },
+            { name: "共享充電寶", icon: Battery, page: "powerBank" as const },
+            { name: "設定", icon: Settings, page: "ems" as const },
+          ].map(({ name, icon: Icon, page }) => (
+            <button
+              key={name}
+              className={`flex flex-col items-center p-2 ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`}
+              onClick={() => setActivePage(page)}
+            >
+              <Icon className={`w-6 h-6 mb-1 ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`} />
+              <span className={`text-xs ${activePage === page ? "text-[#B38B5F]" : "text-gray-600"}`}>{name}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+    </SettingsProvider>
   );
 }
 
