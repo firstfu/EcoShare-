@@ -9,6 +9,7 @@ interface DeviceModalProps {
   device: Device | null;
   onSubmit: (formData: Omit<Device, "id">) => void;
   currentStep?: number;
+  isSubmitting?: boolean;
 }
 
 const steps = [
@@ -28,7 +29,7 @@ const steps = [
 
 type FormData = Omit<Device, "id">;
 
-export default function DeviceModal({ isOpen, onClose, device, onSubmit, currentStep = 0 }: DeviceModalProps) {
+export default function DeviceModal({ isOpen, onClose, device, onSubmit, currentStep = 0, isSubmitting }: DeviceModalProps) {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     type: "socket",
@@ -168,8 +169,21 @@ export default function DeviceModal({ isOpen, onClose, device, onSubmit, current
             <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               取消
             </button>
-            <button type="submit" className="px-4 py-2 bg-[#B38B5F] text-white rounded-lg hover:bg-[#8B6A47] transition-colors">
-              下一步
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`px-4 py-2 bg-[#B38B5F] text-white rounded-lg hover:bg-[#8B6A47] transition-colors flex items-center gap-2 ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  處理中...
+                </>
+              ) : (
+                "下一步"
+              )}
             </button>
           </div>
         </form>

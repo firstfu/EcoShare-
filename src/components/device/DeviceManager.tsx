@@ -1,59 +1,13 @@
 import { useState } from "react";
 import { Search, Plus, Filter } from "lucide-react";
+import { useQuery, useMutation, useQueryClient, UseQueryResult } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import DeviceList from "./DeviceList";
 import DeviceModal from "./DeviceModal";
+import { deviceApi, Device, DeviceCreateDTO } from "../../api/device";
 
 type DeviceStatus = "active" | "inactive" | "maintenance";
 type DeviceType = "socket" | "sensor" | "controller";
-
-interface Device {
-  id: string;
-  name: string;
-  type: DeviceType;
-  location: string;
-  status: DeviceStatus;
-  lastMaintenance: string;
-  nextMaintenance: string;
-  powerUsage: number;
-  installDate: string;
-}
-
-// 模擬設備數據
-const mockDevices: Device[] = [
-  {
-    id: "1",
-    name: "智慧插座 A-101",
-    type: "socket",
-    location: "1F-前廳",
-    status: "active",
-    lastMaintenance: "2024-01-01",
-    nextMaintenance: "2024-04-01",
-    powerUsage: 120,
-    installDate: "2023-06-15",
-  },
-  {
-    id: "2",
-    name: "溫度感測器 B-201",
-    type: "sensor",
-    location: "2F-會議室",
-    status: "maintenance",
-    lastMaintenance: "2024-01-15",
-    nextMaintenance: "2024-04-15",
-    powerUsage: 5,
-    installDate: "2023-07-01",
-  },
-  {
-    id: "3",
-    name: "電源控制器 C-301",
-    type: "controller",
-    location: "3F-辦公區",
-    status: "active",
-    lastMaintenance: "2024-01-10",
-    nextMaintenance: "2024-04-10",
-    powerUsage: 50,
-    installDate: "2023-08-01",
-  },
-];
 
 export type { Device, DeviceStatus, DeviceType };
 
@@ -61,7 +15,52 @@ export default function DeviceManager() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
-  const [devices, setDevices] = useState<Device[]>(mockDevices);
+
+  const queryClient = useQueryClient();
+
+  // 獲取設備列表
+  const { data: devices = [], isLoading }: UseQueryResult<Device[], Error> = useQuery({
+    queryKey: ["devices"],
+    queryFn: deviceApi.list,
+  });
+
+  // 新增設備
+  const createMutation = useMutation({
+    mutationFn: (data: DeviceCreateDTO) => deviceApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
+      toast.success("設備新增成功");
+      setIsModalOpen(false);
+    },
+    onError: (error: Error) => {
+      toast.error(`新增設備失敗: ${error.message}`);
+    },
+  });
+
+  // 更新設備
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<DeviceCreateDTO> }) => deviceApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
+      toast.success("設備更新成功");
+      setIsModalOpen(false);
+    },
+    onError: (error: Error) => {
+      toast.error(`更新設備失敗: ${error.message}`);
+    },
+  });
+
+  // 刪除設備
+  const deleteMutation = useMutation({
+    mutationFn: deviceApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
+      toast.success("設備刪除成功");
+    },
+    onError: (error: Error) => {
+      toast.error(`刪除設備失敗: ${error.message}`);
+    },
+  });
 
   const filteredDevices = devices.filter(
     device =>
@@ -81,31 +80,20 @@ export default function DeviceManager() {
   };
 
   const handleDeleteDevice = (device: Device) => {
-    setDevices(prev => prev.filter(d => d.id !== device.id));
+    deleteMutation.mutate(device.id);
   };
 
   const handleSubmit = (formData: Omit<Device, "id">) => {
     if (selectedDevice) {
       // 更新現有設備
-      setDevices(prev =>
-        prev.map(device =>
-          device.id === selectedDevice.id
-            ? {
-                ...device,
-                ...formData,
-              }
-            : device
-        )
-      );
+      updateMutation.mutate({
+        id: selectedDevice.id,
+        data: formData,
+      });
     } else {
       // 新增設備
-      const newDevice: Device = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setDevices(prev => [...prev, newDevice]);
+      createMutation.mutate(formData);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -143,11 +131,23 @@ export default function DeviceManager() {
 
       {/* 設備列表 */}
       <div className="p-4">
-        <DeviceList devices={filteredDevices} onEdit={handleEditDevice} onDelete={handleDeleteDevice} />
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B38B5F]"></div>
+          </div>
+        ) : (
+          <DeviceList devices={filteredDevices} onEdit={handleEditDevice} onDelete={handleDeleteDevice} />
+        )}
       </div>
 
       {/* 新增/編輯設備彈窗 */}
-      <DeviceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} device={selectedDevice} onSubmit={handleSubmit} />
+      <DeviceModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        device={selectedDevice}
+        onSubmit={handleSubmit}
+        isSubmitting={createMutation.isPending || updateMutation.isPending}
+      />
     </div>
   );
 }
