@@ -8,9 +8,10 @@ import SmartSocket from "./components/SmartSocket";
 import PowerBank from "./components/PowerBank";
 import EnergyManager from "./components/EnergyManager";
 import MemberManager from "./components/member/MemberManager";
-import { FileText, Users, MonitorSmartphone, Zap, Battery, Settings } from "lucide-react";
+import { FileText, Users, MonitorSmartphone, Zap, Battery, Settings, Plus } from "lucide-react";
 import { SettingsProvider } from "./settings/contexts/SettingsContext";
 import SettingsManager from "./settings/components/SettingsManager";
+import DeviceModal from "./components/device/DeviceModal";
 
 const yearData = [
   { date: 2012, value: 0 },
@@ -52,6 +53,7 @@ function App() {
   const [startYear, setStartYear] = useState(2012);
   const [endYear, setEndYear] = useState(2023);
   const [activePage, setActivePage] = useState<"ems" | "powerBank" | "energyManager" | "members" | "devices">("devices");
+  const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
 
   const handleRangeChange = (start: number, end: number) => {
     setStartYear(start);
@@ -71,6 +73,16 @@ function App() {
     }
   };
 
+  const handleAddDevice = () => {
+    setIsDeviceModalOpen(true);
+  };
+
+  const handleDeviceSubmit = (formData: any) => {
+    // 這裡處理新增設備的邏輯
+    console.log("New device data:", formData);
+    setIsDeviceModalOpen(false);
+  };
+
   const renderContent = () => {
     switch (activePage) {
       case "powerBank":
@@ -87,6 +99,13 @@ function App() {
             <div className="p-4 bg-white">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg">路易莎咖啡(台中1店)</h2>
+                <button
+                  onClick={handleAddDevice}
+                  className="flex items-center gap-1 px-3 py-2 bg-[#B38B5F] text-white rounded-lg hover:bg-[#8B6A47] transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>新增設備</span>
+                </button>
               </div>
             </div>
 
@@ -115,6 +134,9 @@ function App() {
                 <SmartSocket floor="4F" revenue={500} status="error" onClick={() => {}} />
               </div>
             </div>
+
+            {/* 新增設備的 Modal */}
+            <DeviceModal isOpen={isDeviceModalOpen} onClose={() => setIsDeviceModalOpen(false)} device={null} onSubmit={handleDeviceSubmit} />
           </>
         );
       default:
