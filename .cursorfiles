@@ -1,0 +1,170 @@
+# Project: EcoShare+ 智慧能源管理系統
+# Version: 1.0.0
+# Author: FirstFu
+# Last Updated: 2024-01-01
+
+# 專案概述
+## 目標
+- 提供直觀的能源使用監控介面
+- 實現智慧設備的自動化管理
+- 優化能源使用效率
+- 降低用戶能源成本
+
+## 核心功能
+- 即時能源監控
+- 智慧設備管理
+- 用電分析與預測
+- 成本優化建議
+
+# 技術架構
+## 前端技術
+- React 18+ (函數式組件 + Hooks)
+- TypeScript 5.0+
+- Tailwind CSS 3.0+
+- Vite 4.0+
+- Lucide Icons
+- React Router v6
+- React Query
+- Zustand (狀態管理)
+
+## 開發環境
+- Node.js >= 18.0.0
+- pnpm 8.0+
+- VS Code + Cursor
+- Chrome DevTools
+
+# 專案結構說明
+## 核心目錄
+/src/
+  ├── components/          # 可重用組件
+  │   ├── energy/         # 能源監控相關
+  │   ├── device/         # 設備管理相關
+  │   ├── member/         # 會員系統相關
+  │   ├── powerbank/      # 電力銀行相關
+  │   └── shared/         # 共用組件
+  ├── hooks/              # 自定義 Hooks
+  ├── utils/              # 工具函數
+  ├── types/              # TypeScript 類型定義
+  ├── services/           # API 服務
+  ├── store/              # 狀態管理
+  └── assets/             # 靜態資源
+
+## 重要檔案說明
+- /src/App.tsx                    # 應用程式入口，路由配置
+- /src/main.tsx                   # 應用程式初始化
+- /src/vite-env.d.ts             # 環境類型聲明
+- /tailwind.config.js            # Tailwind 配置
+- /tsconfig.json                 # TypeScript 配置
+
+# 開發規範
+## 命名規範
+1. 檔案命名
+   - 組件檔案：PascalCase (DeviceList.tsx)
+   - 工具檔案：camelCase (formatNumber.ts)
+   - 樣式檔案：kebab-case (button-styles.css)
+
+2. 變數命名
+   - 普通變數：camelCase
+   - 常量：UPPER_SNAKE_CASE
+   - 介面：以 I 開頭或 Props 結尾
+   - 類型：以 T 開頭
+   - 列舉：以 E 開頭
+
+## 代碼風格
+1. TypeScript 相關
+   - 優先使用 type 而非 interface
+   - 必須定義所有類型，禁用 any
+   - 使用 const assertions
+   - 善用 utility types
+
+2. React 相關
+   - 使用函數式組件
+   - 使用 React.memo 優化效能
+   - 遵循 Hooks 規則
+   - 組件職責單一
+
+3. 樣式規範
+   - 優先使用 Tailwind 類名
+   - 遵循 mobile-first 響應式設計
+   - 使用語義化類名
+   - 避免內聯樣式
+
+# UI/UX 設計規範
+## 顏色系統
+1. 主要顏色
+   - 主色：green-500 (#10B981)
+   - 輔色：gray-50 (#F9FAFB)
+   - 強調：green-600 (#059669)
+
+2. 功能顏色
+   - 成功：green-500 (#10B981)
+   - 警告：yellow-500 (#F59E0B)
+   - 錯誤：red-500 (#EF4444)
+   - 資訊：blue-500 (#3B82F6)
+
+## 排版規範
+- 標題：text-2xl (24px)
+- 副標題：text-xl (20px)
+- 正文：text-base (16px)
+- 小字：text-sm (14px)
+
+## 間距系統
+- 內間距：p-4 (1rem)
+- 外間距：m-4 (1rem)
+- 元素間距：gap-4 (1rem)
+
+# 效能優化指南
+1. 代碼層面
+   - 使用 React.memo 避免不必要渲染
+   - 實作虛擬列表處理大量數據
+   - 使用 React.lazy 進行代碼分割
+   - 優化 useEffect 依賴項
+
+2. 資源層面
+   - 圖片懶加載
+   - 使用 WebP 格式圖片
+   - 開啟 gzip 壓縮
+   - 使用 CDN 加速
+
+# 錯誤處理
+1. API 錯誤
+   - 統一的錯誤處理機制
+   - 友善的錯誤提示
+   - 錯誤日誌記錄
+
+2. 前端異常
+   - 全局錯誤邊界
+   - 錯誤追蹤與報告
+   - 降級處理方案
+
+# 安全考量
+1. 資料安全
+   - API 請求加密
+   - 敏感資訊脫敏
+   - XSS 防護
+
+2. 權限控制
+   - 路由權限
+   - 操作權限
+   - 資料權限
+
+# 注意事項
+1. 本地化
+   - 所有文字使用繁體中文
+   - 數值使用 toLocaleString 格式化
+   - 時間格式本地化
+
+2. 即時性
+   - 能源數據即時更新
+   - 設備狀態實時同步
+   - 系統通知即時推送
+
+3. 可訪問性
+   - 支援鍵盤導航
+   - 提供 ARIA 標籤
+   - 合適的顏色對比度
+
+4. 相容性
+   - 支援主流瀏覽器最新兩個版本
+   - 響應式設計適配各種設備
+   - 優雅降級處理
