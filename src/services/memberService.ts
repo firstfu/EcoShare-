@@ -17,7 +17,7 @@ const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 //   }
 // );
 
-// 回應攔截器：處理錯誤
+// // 回應攔截器：處理錯誤
 // axios.interceptors.response.use(
 //   response => response,
 //   error => {
@@ -37,8 +37,11 @@ const API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 export const memberService = {
   // 獲取成員列表
   async getMembers(params: { skip?: number; limit?: number } = {}): Promise<MemberResponse> {
-    const { data } = await axios.get<MemberResponse>(`${API_BASE_URL}/users`, { params });
-    return data;
+    const { data } = await axios.get<Member[]>(`${API_BASE_URL}/users`, { params });
+    return {
+      data,
+      total: data.length,
+    };
   },
 
   // 獲取當前用戶資料
